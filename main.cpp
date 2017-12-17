@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstring>
 
 // A structure to represent an adjacency list node
 struct AdjListNode
@@ -11,7 +12,9 @@ struct AdjListNode
 // A structure to represent an adjacency list
 struct AdjList
 {
-    struct AdjListNode *head;  // pointer to head node of list
+    struct AdjListNode *head;// pointer to head node of list
+    int isVisited = 0;
+    int color = -1;
 };
 
 // A structure to represent a graph. A graph is an array of adjacency lists.
@@ -81,9 +84,121 @@ void printGraph(struct Graph* graph)
     }
 }
 
+int findSmallestUnvisitedNode(struct Graph* graph,char *coursesNamesList[6]){
+
+    int v;
+    char starterPointString[16] ;
+    strcpy(starterPointString,"ZZZZZZZZZZZZZZZ");
+    int starterPoint= 0;
+
+
+    for (v = 0; v < graph->V; v++)
+    {
+
+        if (strcmp(coursesNamesList[v],starterPointString)  < 0  && graph->array[v].isVisited != 1 ){ //We are trying to find the smallest course name value to set the starting point.
+
+            strcpy(starterPointString,coursesNamesList[v]);
+            starterPoint = v;
+
+
+        }
+
+    }
+    return starterPoint;
+
+
+
+}
+
+void GraphColoring(struct Graph* graph,char *coursesNamesList[6]){
+
+    int sortedGraphNodesList[6];
+    int colors[3];
+    colors[0]=0;
+    colors[1]=1;
+    colors[2]=2;
+
+    int v;
+    for ( v = 0; v < graph->V; v++) {//Find the list of nodes that contains sorted indexes of graph.
+
+        int smallestUnvisitedNodeIndex = findSmallestUnvisitedNode(graph,coursesNamesList);
+        graph->array[smallestUnvisitedNodeIndex].isVisited = 1;
+        sortedGraphNodesList[v] = smallestUnvisitedNodeIndex;
+        printf("\n%s\n",coursesNamesList[sortedGraphNodesList[v]]);
+
+    }
+    for (int v = 0; v < graph->V; ++v) {//Re-assign the isVisited variable to the 0 to use in the future.
+        graph->array[v].isVisited = 0;
+    }
+    for (int v = 0; v < graph->V; ++v) {//We will try to travers the list that we vreated earlier and try to find out adjecent nodes colors and assign a different color.
+        if(graph->array[sortedGraphNodesList[v]].isVisited != 1){
+            struct AdjListNode* pCrawl = graph->array[sortedGraphNodesList[v]].head;
+            while (pCrawl){
+
+
+                graph->array[pCrawl->dest].color;
+
+
+                pCrawl = pCrawl->next;
+
+
+
+            }
+
+            graph->array[sortedGraphNodesList[v]].isVisited = 1;
+
+        }
+
+    }
+
+//        graph->array->isVisited = 1;
+//
+//        struct AdjListNode* pCrawl = graph->array[v].head;
+//
+//        printf("\n Adjacency list of vertex %d\n head ", v);
+//        while (pCrawl)
+//        {
+//            printf("-> %d", pCrawl->dest);
+//            pCrawl = pCrawl->next;
+//        }
+//        printf("\n");
+
+
+
+
+}
+
+
+
+
+
+
 // Driver program to test above functions
 int main()
 {
+
+
+    char *studentNameList[4] ;
+    studentNameList[0] = "Ayse Kara";
+    studentNameList[1] = "Efe Anil";
+    studentNameList[2] = "Suat Ali Barut";
+    studentNameList[3] = "Nil Girgin";
+
+
+    char *coursesNamesList[6] ;
+    coursesNamesList[0] = "MATH101";
+    coursesNamesList[1] = "CSE100";
+    coursesNamesList[2] = "MATH259";
+    coursesNamesList[3] = "BLAW203";
+    coursesNamesList[4] = "STAT253";
+    coursesNamesList[5] = "HIST111";
+
+
+
+
+
+
+
     // create the graph given in above figure
     int V = 6;
     struct Graph* graph = createGraph(V);
@@ -97,6 +212,7 @@ int main()
 
     // print the adjacency list representation of the above graph
     printGraph(graph);
+    GraphColoring(graph,coursesNamesList);
 
     return 0;
 }
