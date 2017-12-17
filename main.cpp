@@ -110,6 +110,30 @@ int findSmallestUnvisitedNode(struct Graph* graph,char *coursesNamesList[6]){
 
 }
 
+int* sortedListGraphNodes(struct Graph* graph,char *coursesNamesList[6]){
+
+    int sortedGraphNodesList[6];
+    int colors[3];
+    colors[0]=0;
+    colors[1]=1;
+    colors[2]=2;
+
+    int v;
+    for ( v = 0; v < graph->V; v++) {//Find the list of nodes that contains sorted indexes of graph.
+
+        int smallestUnvisitedNodeIndex = findSmallestUnvisitedNode(graph,coursesNamesList);
+        graph->array[smallestUnvisitedNodeIndex].isVisited = 1;
+        sortedGraphNodesList[v] = smallestUnvisitedNodeIndex;
+        printf("\n%s\n",coursesNamesList[sortedGraphNodesList[v]]);
+
+    }
+    for (int v = 0; v < graph->V; ++v) {//Re-assign the isVisited variable to the 0 to use in the future.
+        graph->array[v].isVisited = 0;
+    }
+    return sortedGraphNodesList;
+
+}
+
 void GraphColoring(struct Graph* graph,char *coursesNamesList[6]){
 
     int sortedGraphNodesList[6];
@@ -130,13 +154,28 @@ void GraphColoring(struct Graph* graph,char *coursesNamesList[6]){
     for (int v = 0; v < graph->V; ++v) {//Re-assign the isVisited variable to the 0 to use in the future.
         graph->array[v].isVisited = 0;
     }
-    for (int v = 0; v < graph->V; ++v) {//We will try to travers the list that we vreated earlier and try to find out adjecent nodes colors and assign a different color.
+
+
+
+
+
+
+
+    for (int v = 0; v < graph->V; ++v) {//We will try to travers the list that we created earlier and try to find out adjecent nodes colors and assign a different color.
         if(graph->array[sortedGraphNodesList[v]].isVisited != 1){
+
             struct AdjListNode* pCrawl = graph->array[sortedGraphNodesList[v]].head;
+            int adjacentColors[3];
+            int adjacentColorsIndex = 0 ;
             while (pCrawl){
 
+                if (graph->array[pCrawl->dest].color >= 0){//If there is a color assigned to the adjacent before.
+                    adjacentColors[adjacentColorsIndex] = graph->array[pCrawl->dest].color;
 
-                graph->array[pCrawl->dest].color;
+                }else{
+
+                }
+
 
 
                 pCrawl = pCrawl->next;
@@ -212,7 +251,27 @@ int main()
 
     // print the adjacency list representation of the above graph
     printGraph(graph);
-    GraphColoring(graph,coursesNamesList);
+
+    int *sortedGraphNodesList ;
+    sortedGraphNodesList = (int*) malloc(sizeof(coursesNamesList));
+    sortedGraphNodesList = sortedListGraphNodes(graph,coursesNamesList);
+    printf("\n%d",sortedGraphNodesList[0]);
+    printf("\n%d",sortedGraphNodesList[1]);
+    printf("\n%d",sortedGraphNodesList[2]);
+    printf("\n%d",sortedGraphNodesList[3]);
+    printf("\n%d",sortedGraphNodesList[4]);
+    printf("\n%d",sortedGraphNodesList[5]);
+
+
+
+
+    for (int i = 0; i < 6; i++) {
+
+
+        printf("%d",sortedGraphNodesList[i]);
+
+    }
+//    GraphColoring(graph,coursesNamesList);
 
     return 0;
 }
