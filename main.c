@@ -8,7 +8,6 @@
  * Stack operations: PUSH(insert operation), POP(Delete operation)
  * and Display stack.
  */
-#include <stdio.h>
 #define MAXSIZE 10
 
 struct stack
@@ -23,13 +22,16 @@ void pushStack (STACK *s ,int num)
 {
     if (s->top == (MAXSIZE - 1))
     {
-        printf ("Stack is Full\n");
+        printf ("   Stack is Full\n");
         return;
     }
     else
     {
+
         s->top = s->top + 1;
         s->stk[s->top] = num;
+        printf ("   Pushed element is = %d\n", s->stk[s->top]);
+
     }
     return;
 }
@@ -39,13 +41,13 @@ int popStack (STACK *s)
     int num;
     if (s->top == - 1)
     {
-        printf ("Stack is Empty\n");
+        printf ("   Stack is Empty\n");
         return (s->top);
     }
     else
     {
         num = s->stk[s->top];
-        printf ("poped element is = %d\n", s->stk[s->top]);
+        printf ("   Poped element is = %d\n", s->stk[s->top]);
         s->top = s->top - 1;
     }
     return(num);
@@ -56,18 +58,18 @@ void displayStack (STACK *s)
     int i;
     if (s->top == -1)
     {
-        printf ("Stack is empty\n");
+        printf ("   Stack is empty\n");
         return;
     }
     else
     {
-        printf ("\n The status of the stack is \n");
+        printf ("\n   The status of the stack is \n");
         for (i = s->top; i >= 0; i--)
         {
-            printf ("%d\n", s->stk[i]);
+            printf ("\n    | %d |", s->stk[i]);
         }
     }
-    printf ("\n");
+    printf ("\n    |---|\n");
 }
 
 // A structure to represent an adjacency list node
@@ -156,7 +158,6 @@ void printGraph(struct Graph* graph)
 
 int findSmallestUnvisitedNodeFromAdjacentList(struct Graph* graph, struct AdjListNode* adjacentList ,char *coursesNamesList[6]){
 
-    int v;
     char starterPointString[16] ;
     strcpy(starterPointString,"ZZZZZZZZZZZZZZZ");
     int starterPoint= -1;
@@ -192,13 +193,13 @@ void colorTheNode(struct Graph* graph,char *coursesNamesList[6],int currentNodeI
     colorList[4]=0;
     colorList[5]=0;
 
-    printf("\nColoring Algorithm is Starting for %s... \n",coursesNamesList[currentNodeIndexOfGraph]);
+    printf("\n   Coloring Algorithm is Starting for %s... \n",coursesNamesList[currentNodeIndexOfGraph]);
     while (adjacentList)
     {
         if ( graph->array[adjacentList->dest].color > -1){ //If there is a color assigned before.
 
             colorList[graph->array[adjacentList->dest].color] = 1; //We add this color to the colorList array so we can later traverse it to find the smallest color we can color the currentNode.
-            printf("Color %d is now in adjacent colors of the %s. Because of the node %s\n",
+            printf("   Color %d is now in adjacent colors of the %s. Because of the node %s\n",
                    graph->array[adjacentList->dest].color, coursesNamesList[currentNodeIndexOfGraph],coursesNamesList[adjacentList->dest]);
 
         }
@@ -210,7 +211,7 @@ void colorTheNode(struct Graph* graph,char *coursesNamesList[6],int currentNodeI
 
         if(colorList[index] != 1){
             graph->array[currentNodeIndexOfGraph].color = index; //We color the current node with the first empty color index from adjacents.
-            printf("%s is colored to the %d color.\n",coursesNamesList[currentNodeIndexOfGraph],graph->array[currentNodeIndexOfGraph].color);
+            printf("   %s is colored to the %d color.\n",coursesNamesList[currentNodeIndexOfGraph],graph->array[currentNodeIndexOfGraph].color);
             foundSmallestColorIndex=1;
         }
 
@@ -229,6 +230,8 @@ void DFS(struct Graph* graph, char *coursesNamesList[6], STACK *stackForDFS, int
 
 
         int popResponse = popStack(stackForDFS);
+        displayStack(stackForDFS);
+
         if(popResponse == -1 || stackForDFS->top == -1){ //If stack is empty already or we just made it empty.
             return;
         }else{
@@ -242,6 +245,7 @@ void DFS(struct Graph* graph, char *coursesNamesList[6], STACK *stackForDFS, int
 
         graph->array[currentNodeIndexOfGraph].isVisited = 1;//Mark as visited.
         pushStack(stackForDFS,currentNodeIndexOfGraph);//Push the stack.
+        displayStack(stackForDFS);
 
         int smallestUnvisitedNodeIndex = findSmallestUnvisitedNodeFromAdjacentList(graph,graph->array[currentNodeIndexOfGraph].head,coursesNamesList);
         colorTheNode(graph,coursesNamesList,currentNodeIndexOfGraph,graph->array[currentNodeIndexOfGraph].head);
@@ -249,6 +253,8 @@ void DFS(struct Graph* graph, char *coursesNamesList[6], STACK *stackForDFS, int
         if(smallestUnvisitedNodeIndex == -1){ //If there is no adjacent un-visited node.
 
             popStack(stackForDFS); //Pop the last element in the stack.
+            displayStack(stackForDFS);
+
             DFS(graph,coursesNamesList,stackForDFS,stackForDFS->stk[stackForDFS->top]);
 
         }
@@ -302,6 +308,14 @@ int main()
     addEdge(graph, 2, 5);
     addEdge(graph, 2, 4);
     addEdge(graph, 4, 5);
+    addEdge(graph, 3, 2);
+    addEdge(graph, 1, 4);
+    addEdge(graph, 1, 5);
+    addEdge(graph, 3, 5);
+    addEdge(graph, 0, 4);
+    addEdge(graph, 5, 2);
+
+
     printGraph(graph);
 
 
@@ -313,12 +327,42 @@ int main()
 
 
     DFS(graph,coursesNamesList,stackForDFS,3);
-    graph->array->isVisited = 1;
 
-    for (int i = 0; i < graph->V; ++i) {
 
-        printf("\n -- Color of %s node is : #%d", coursesNamesList[i],graph->array[i].color);
+
+    int biggesColorIndex = -1;
+    for (int k = 0; k < graph->V; ++k) { //Try to find biggestColorIndex for later use in the output.
+        if (graph->array[k].color>biggesColorIndex){
+            biggesColorIndex = graph->array[k].color;
+        }
+
     }
+
+    int scheduleList[biggesColorIndex+1];
+
+
+    for (int l = 0; l < biggesColorIndex + 1; ++l) { //Assign 0 to all the period array's elements.
+
+
+        scheduleList[l] = 0;
+
+
+    }
+
+    for (int j = 0; j < biggesColorIndex+1; ++j) {
+
+        printf("\nFinal Exam Period %d => ", j+1);
+
+        for (int i = 0; i < graph->V; ++i) {
+
+            if(graph->array[i].color == j){
+
+                printf(" %-10s",coursesNamesList[i]);
+
+            }
+        }
+    }
+
 
     return 0;
 }
