@@ -3,12 +3,10 @@
 #include <string.h>
 
 
-/*
- * C program to implement stack. Stack is a LIFO data structure.
- * Stack operations: PUSH(insert operation), POP(Delete operation)
- * and Display stack.
- */
-#define MAXSIZE 10
+
+
+
+#define MAXSIZE 6
 
 struct stack
 {
@@ -156,7 +154,7 @@ void printGraph(struct Graph* graph)
     }
 }
 
-int findSmallestUnvisitedNodeFromAdjacentList(struct Graph* graph, struct AdjListNode* adjacentList ,char *coursesNamesList[6]){
+int findSmallestUnvisitedNodeFromAdjacentList(struct Graph* graph, struct AdjListNode* adjacentList ,char *coursesNamesList[graph->V]){
 
     char starterPointString[16] ;
     strcpy(starterPointString,"ZZZZZZZZZZZZZZZ");
@@ -185,13 +183,13 @@ int findSmallestUnvisitedNodeFromAdjacentList(struct Graph* graph, struct AdjLis
 
 void colorTheNode(struct Graph* graph,char *coursesNamesList[6],int currentNodeIndexOfGraph,struct AdjListNode* adjacentList){
 
-    int colorList[6];
-    colorList[0]=0;
-    colorList[1]=0;
-    colorList[2]=0;
-    colorList[3]=0;
-    colorList[4]=0;
-    colorList[5]=0;
+    int colorList[graph->V];
+
+    for (int i = 0; i < graph->V; ++i) { //Created a array of colors that is possible ( max color number is graph->v). And assigned them to the 0.
+        colorList[i] = 0;
+    }
+
+
 
     printf("\n   Coloring Algorithm is Starting for %s... \n",coursesNamesList[currentNodeIndexOfGraph]);
     while (adjacentList)
@@ -223,7 +221,7 @@ void colorTheNode(struct Graph* graph,char *coursesNamesList[6],int currentNodeI
 
 }
 
-void DFS(struct Graph* graph, char *coursesNamesList[6], STACK *stackForDFS, int currentNodeIndexOfGraph){
+void DFS(struct Graph* graph, char *coursesNamesList[graph->V], STACK *stackForDFS, int currentNodeIndexOfGraph){
 
     printf("\nDFS is running for %s\n",coursesNamesList[currentNodeIndexOfGraph]);
     if(graph->array[currentNodeIndexOfGraph].isVisited == 1){ //If the currentNode is visited.
@@ -271,10 +269,67 @@ void DFS(struct Graph* graph, char *coursesNamesList[6], STACK *stackForDFS, int
 
 }
 
+char* concat(const char *s1, const char *s2){ //For string combining .
+    char *result = malloc(strlen(s1)+strlen(s2)+strlen(" ")+1);//+1 for the null-terminator
+    //in real code you would check for errors in malloc here
+    strcpy(result, s1);
+    strcat(result," ");
+    strcat(result, s2);
+    return result;
+}
 
+struct nodeStudent{
+
+    char courseName[15];
+    char studentName[15];
+    struct coursesNamesofStudent *next;
+
+
+
+};
+typedef struct nodeStudent nodeStudent;
+typedef struct nodeStudent* nodeStudentPtr;
+typedef struct nodeStudent** nodeStudentPtrPtr;
 // Driver program to test above functions
+
+nodeStudentPtr insertCourseIntoLinkedList(nodeStudentPtrPtr header , char courseName[] ){ //Insert the node without sort or any other comparements . For input files !
+
+    nodeStudentPtr newNode, temp;
+
+    // create node to insert and assign values to its fields
+    newNode= malloc(sizeof(nodeStudentPtr));
+    strcpy(newNode->courseName,courseName);
+    newNode->next=NULL;
+    // if LL empty
+    if ((*header)->next == NULL)
+        (*header)->next = newNode;
+        // if LL not empty
+    else {
+        temp=(*header)->next;
+        while (temp != NULL ) {
+            temp=temp->next;
+        }
+        temp = newNode;
+
+    }
+
+    return newNode;
+
+}
+
+
 int main()
 {
+
+    nodeStudentPtr hdr ;
+    hdr = malloc(sizeof(nodeStudentPtr)) ;
+    hdr->next = NULL ;
+    insertCourseIntoLinkedList(&hdr,"Onur");
+    insertCourseIntoLinkedList(&hdr,"On2ur");
+    insertCourseIntoLinkedList(&hdr,"On3ur");
+    insertCourseIntoLinkedList(&hdr,"On4ur");
+
+
 
 
     char *studentNameList[4] ;
@@ -294,7 +349,102 @@ int main()
 
 
 
+    FILE *inputFile;
+    if((inputFile = fopen("/Users/mac/Desktop/Projects/Academic-C-Projects/ExamSchedulingUsingGraphColoringAlgorithm/input.txt","r")) == NULL){
+        printf("Input File Could Not Be Opened!\n");
+        return 0;
+    }else{
+        char *studentNameFromInputFile[3];//Created an array to keep the student names.
 
+//        for (int i = 0; i < 4; ++i) {
+//            studentNameFromInputFile[i] = "Empty"; //Assigned " " to all element because later we will want to know when is over.
+//        }
+
+
+        char* word[15];
+        int index = 0;
+        while (!feof(inputFile)) {
+            while (fscanf(inputFile, " %1023s", word) == 1) {
+
+                printf("\nCurrent Word in Input1 : %s \n",word);
+
+                char *studentNameToGenerate;
+                studentNameToGenerate = malloc(sizeof(studentNameFromInputFile));
+
+
+                if (strcmp(word,":") == 0){ //If it is a ":" so we can generate the student Name from the previous words.
+                    nodeStudent *newStudent; //Created a newStudent.
+                    newStudent = (nodeStudent*) malloc(sizeof(nodeStudent));
+                    for (int i = 0; i < 3; ++i) {
+
+                        if(strcmp(studentNameFromInputFile[i],"\0") == 0){ //If the current word of the name is not exists.
+                            printf("\nCurrent Student Name is : %s\n",studentNameToGenerate);
+
+
+                            strcpy(newStudent->studentName,studentNameToGenerate);
+                            if(newStudent->studentName == NULL) printf("NewStudent->Name is NULL");
+                            break;
+                        }else{
+
+                            studentNameToGenerate = concat(studentNameToGenerate,studentNameFromInputFile[i]);
+
+                        }
+
+
+                    }
+
+                    //Getting the courses name of the current student.
+
+                    printf("\nCourses Names are started...\n");
+
+                    nodeStudent *iterator = malloc(sizeof(newStudent));
+
+                    if(fscanf(inputFile, " %1023s", word) == 1){
+
+                        strcpy(newStudent->courseName,word);
+                    }
+
+                    iterator = newStudent->next;
+
+                    while (!feof(inputFile)) {
+
+                        while (fscanf(inputFile, " %1023s", word) == 1) {
+
+                            iterator = malloc(sizeof(newStudent));
+                            strcpy(iterator->courseName,word);
+
+                            iterator = iterator->next;
+
+
+                        }
+                    }
+
+
+
+
+
+                }else if(strcmp(word,".") == 0){
+
+                    printf("\nCourses Names are ended...\n");
+
+                }else{
+
+                    strcpy(studentNameFromInputFile[index],word); //If it isn't a starter for Courses names or it isn't a end of courses names. It is one of the Student Names.
+                    strcpy(studentNameFromInputFile[index+1],"");
+                    index++;
+                }
+
+            }
+
+        }
+
+
+    }
+
+
+
+//    berna altinel:cse100,cse300,cse400
+//    harun büyüktepe:cse225,cse344,cse363
 
 
 
@@ -308,12 +458,7 @@ int main()
     addEdge(graph, 2, 5);
     addEdge(graph, 2, 4);
     addEdge(graph, 4, 5);
-    addEdge(graph, 3, 2);
-    addEdge(graph, 1, 4);
-    addEdge(graph, 1, 5);
-    addEdge(graph, 3, 5);
-    addEdge(graph, 0, 4);
-    addEdge(graph, 5, 2);
+
 
 
     printGraph(graph);
