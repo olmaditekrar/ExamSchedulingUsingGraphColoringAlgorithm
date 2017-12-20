@@ -2,11 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-
-
-
-#define MAXSIZE 6
+#define MAXSIZE 10
+#define MAX_NUMBER_COURSES 10
+#define MAX_NUMBER_STUDENTS 10
 
 struct stack
 {
@@ -14,6 +12,37 @@ struct stack
     int top;
 };
 typedef struct stack STACK;
+
+// A structure to represent an adjacency list node
+struct AdjListNode
+{
+    int dest;
+    struct AdjListNode* next;
+};
+
+// A structure to represent an adjacency list
+struct AdjList
+{
+    struct AdjListNode *head;// pointer to head node of list
+    int isVisited ;
+    int color ;
+};
+
+// A structure to represent a graph. A graph is an array of adjacency lists.
+// Size of array will be V (number of vertices in graph)
+struct Graph
+{
+    int V;
+    struct AdjList* array;
+};
+
+struct nodeStudent{
+
+    char courseName[15];
+    char studentName[30];
+    struct coursesNamesofStudent *next;
+
+};
 
 /*  Function to add an element to the stack */
 void pushStack (STACK *s ,int num)
@@ -70,29 +99,6 @@ void displayStack (STACK *s)
     printf ("\n    |---|\n");
 }
 
-// A structure to represent an adjacency list node
-struct AdjListNode
-{
-    int dest;
-    struct AdjListNode* next;
-};
-
-// A structure to represent an adjacency list
-struct AdjList
-{
-    struct AdjListNode *head;// pointer to head node of list
-    int isVisited ;
-    int color ;
-};
-
-// A structure to represent a graph. A graph is an array of adjacency lists.
-// Size of array will be V (number of vertices in graph)
-struct Graph
-{
-    int V;
-    struct AdjList* array;
-};
-
 // A utility function to create a new adjacency list node
 struct AdjListNode* newAdjListNode(int dest)
 {
@@ -129,6 +135,7 @@ void addEdge(struct Graph* graph, int src, int dest)
     newNode->next = graph->array[src].head;
     graph->array[src].head = newNode;
     graph->array[src].color=-1;
+
     // Since graph is undirected, add an edge from dest to src also
     newNode = newAdjListNode(src);
     newNode->next = graph->array[dest].head;
@@ -166,18 +173,11 @@ int findSmallestUnvisitedNodeFromAdjacentList(struct Graph* graph, struct AdjLis
                 strcpy(starterPointString,coursesNamesList[adjacentList->dest]);
                 starterPoint = adjacentList->dest;
 
-
             }
             adjacentList = adjacentList->next;
         }
 
-
-
-
-        return starterPoint;
-
-
-
+    return starterPoint;
 }
 
 
@@ -201,24 +201,23 @@ void colorTheNode(struct Graph* graph,char *coursesNamesList[6],int currentNodeI
                    graph->array[adjacentList->dest].color, coursesNamesList[currentNodeIndexOfGraph],coursesNamesList[adjacentList->dest]);
 
         }
+
         adjacentList = adjacentList->next;
     }
     int foundSmallestColorIndex = 0;
     int index = 0 ;
+
     while(foundSmallestColorIndex == 0){
 
         if(colorList[index] != 1){
+
             graph->array[currentNodeIndexOfGraph].color = index; //We color the current node with the first empty color index from adjacents.
             printf("   %s is colored to the %d color.\n",coursesNamesList[currentNodeIndexOfGraph],graph->array[currentNodeIndexOfGraph].color);
             foundSmallestColorIndex=1;
         }
 
         index++;
-
-
     }
-
-
 }
 
 void DFS(struct Graph* graph, char *coursesNamesList[graph->V], STACK *stackForDFS, int currentNodeIndexOfGraph){
@@ -237,7 +236,6 @@ void DFS(struct Graph* graph, char *coursesNamesList[graph->V], STACK *stackForD
             DFS(graph,coursesNamesList,stackForDFS,stackForDFS->stk[stackForDFS->top]);
 
         }
-
 
     }else{
 
@@ -278,206 +276,263 @@ char* concat(const char *s1, const char *s2){ //For string combining .
     return result;
 }
 
-struct nodeStudent{
 
-    char courseName[15];
-    char studentName[15];
-    struct coursesNamesofStudent *next;
+void appendToLinkedList(struct nodeStudent** head_ref, char new_data[])
+{
+    /* 1. allocate node */
+    struct nodeStudent* new_node = (struct nodeStudent*) malloc(sizeof(struct nodeStudent));
 
+    struct nodeStudent* last;
+    last = *head_ref;  /* used in step 5*/
 
+    /* 2. put in the data  */
+    strcpy(new_node->courseName,new_data);
 
-};
-typedef struct nodeStudent nodeStudent;
-typedef struct nodeStudent* nodeStudentPtr;
-typedef struct nodeStudent** nodeStudentPtrPtr;
-// Driver program to test above functions
+    /* 3. This new node is going to be the last node, so make next of
+          it as NULL*/
+    new_node->next = NULL;
 
-nodeStudentPtr insertCourseIntoLinkedList(nodeStudentPtrPtr header , char courseName[] ){ //Insert the node without sort or any other comparements . For input files !
-
-    nodeStudentPtr newNode, temp;
-
-    // create node to insert and assign values to its fields
-    newNode= malloc(sizeof(nodeStudentPtr));
-    strcpy(newNode->courseName,courseName);
-    newNode->next=NULL;
-    // if LL empty
-    if ((*header)->next == NULL)
-        (*header)->next = newNode;
-        // if LL not empty
-    else {
-        temp=(*header)->next;
-        while (temp != NULL ) {
-            temp=temp->next;
-        }
-        temp = newNode;
-
+    /* 4. If the Linked List is empty, then make the new node as head */
+    if (*head_ref == NULL)
+    {
+        *head_ref = new_node;
+        return;
     }
 
-    return newNode;
+    /* 5. Else traverse till the last node */
+    while (last->next != NULL)
+        last = last->next;
 
+    /* 6. Change the next of last node */
+    last->next = new_node;
+    return;
 }
 
+
+int printList(struct nodeStudent *node)
+{
+    printf("  Printing the course names for %s : \n",node->studentName);
+    int countNodes= -1;
+    while (node != NULL)
+    {
+        printf(" %s ", node->courseName);
+        node = node->next;
+        countNodes++;
+    }
+    printf("\n");
+    return countNodes;
+}
+
+//It will read one line of string and parse it to the get current student's name and courses he/she got.
+//It will return the nodeStudent struct.
+struct nodeStudent*  readLineAndReturnTheStudent(FILE *inputFile){ //Reads a line from the txt file and generates the student struct.
+
+    if(feof(inputFile)){
+        return NULL;
+    }
+    char* word;
+    word = (char*) malloc(sizeof(char)*30);
+    struct nodeStudent *newStudent;
+    newStudent = (struct nodeStudent*) malloc(sizeof(struct nodeStudent));
+    strcpy(newStudent->studentName,"");
+    while (!feof(inputFile)) {
+
+        fscanf(inputFile, "%s", word);
+        if(strcmp(word,":") == 0){ //If it is a start of the courseNames.
+            // Course Names are going to be read...
+            fscanf(inputFile, "%s", word);
+
+            while(strcmp(word,".") != 0){ //Till the end of the line.
+
+                appendToLinkedList((&newStudent),word); //Append the courseName into the student Struct.
+                fscanf(inputFile, "%s", word);
+            }
+            if (strcmp(word,".") == 0){
+                break;
+            }
+        }else{//If this is a name word.
+
+            strcpy(newStudent->studentName,concat(newStudent->studentName,word));
+        }
+    }
+    return newStudent;
+}
 
 int main()
 {
 
-    nodeStudentPtr hdr ;
-    hdr = malloc(sizeof(nodeStudentPtr)) ;
-    hdr->next = NULL ;
-    insertCourseIntoLinkedList(&hdr,"Onur");
-    insertCourseIntoLinkedList(&hdr,"On2ur");
-    insertCourseIntoLinkedList(&hdr,"On3ur");
-    insertCourseIntoLinkedList(&hdr,"On4ur");
+    char *coursesNamesList[MAX_NUMBER_COURSES] ; //Hold the courses names.
 
+    for (int m = 0; m < MAX_NUMBER_COURSES; ++m) { // We assigned with a memory space.
 
+        coursesNamesList[m] = malloc(10 * sizeof(char));
 
+    }
 
-    char *studentNameList[4] ;
-    studentNameList[0] = "Ayse Kara";
-    studentNameList[1] = "Efe Anil";
-    studentNameList[2] = "Suat Ali Barut";
-    studentNameList[3] = "Nil Girgin";
+    struct nodeStudent *nodeCourses = NULL; //Holds the nodes for courses.
+    nodeCourses = (struct nodeStudent*) malloc(sizeof(struct nodeStudent));
+    nodeCourses->next = NULL;
+    strcpy(nodeCourses->studentName,"General Nodes");
 
+    struct nodeStudent *nodeStudents[10] ; //Holds the entire students.
+    for (int m = 0; m < MAX_NUMBER_STUDENTS; ++m) { //We assigned to the memory spaces.
 
-    char *coursesNamesList[6] ;
-    coursesNamesList[0] = "MATH101";
-    coursesNamesList[1] = "CSE100";
-    coursesNamesList[2] = "MATH259";
-    coursesNamesList[3] = "BLAW203";
-    coursesNamesList[4] = "STAT253";
-    coursesNamesList[5] = "HIST111";
+        nodeStudents[m] = (struct nodeStudent*)malloc(sizeof(struct nodeStudent));
 
+    }
 
+    //Reading the file...
 
     FILE *inputFile;
+    struct nodeStudent *newStudent;
     if((inputFile = fopen("/Users/mac/Desktop/Projects/Academic-C-Projects/ExamSchedulingUsingGraphColoringAlgorithm/input.txt","r")) == NULL){
         printf("Input File Could Not Be Opened!\n");
         return 0;
     }else{
-        char *studentNameFromInputFile[3];//Created an array to keep the student names.
-
-//        for (int i = 0; i < 4; ++i) {
-//            studentNameFromInputFile[i] = "Empty"; //Assigned " " to all element because later we will want to know when is over.
-//        }
+        int currentStudentIndex = 0;
 
 
-        char* word[15];
-        int index = 0;
-        while (!feof(inputFile)) {
-            while (fscanf(inputFile, " %1023s", word) == 1) {
+        while ((newStudent = readLineAndReturnTheStudent(inputFile)) != NULL){ //Scan the word.
 
-                printf("\nCurrent Word in Input1 : %s \n",word);
+            printf("\nNew Student's name: %s\n",newStudent->studentName);
+            printList(newStudent);
+            struct nodeStudent* tempStudentCourses;
+            tempStudentCourses = newStudent;
+            while(tempStudentCourses != NULL){//For every student's every course.
 
-                char *studentNameToGenerate;
-                studentNameToGenerate = malloc(sizeof(studentNameFromInputFile));
-
-
-                if (strcmp(word,":") == 0){ //If it is a ":" so we can generate the student Name from the previous words.
-                    nodeStudent *newStudent; //Created a newStudent.
-                    newStudent = (nodeStudent*) malloc(sizeof(nodeStudent));
-                    for (int i = 0; i < 3; ++i) {
-
-                        if(strcmp(studentNameFromInputFile[i],"\0") == 0){ //If the current word of the name is not exists.
-                            printf("\nCurrent Student Name is : %s\n",studentNameToGenerate);
+                struct nodeStudent* tempGeneralCourses;
+                tempGeneralCourses = nodeCourses;
 
 
-                            strcpy(newStudent->studentName,studentNameToGenerate);
-                            if(newStudent->studentName == NULL) printf("NewStudent->Name is NULL");
-                            break;
-                        }else{
+                //Investigate if the current course of the current student is already assigned, if its not append it to the generalList.
+                while (tempGeneralCourses != NULL ){
+                    if(strcmp(tempStudentCourses->courseName,tempGeneralCourses->courseName) == 0){
 
-                            studentNameToGenerate = concat(studentNameToGenerate,studentNameFromInputFile[i]);
-
-                        }
-
-
+                        break; //If there is a word like this, break.
                     }
 
-                    //Getting the courses name of the current student.
+                    tempGeneralCourses = tempGeneralCourses->next ;
 
-                    printf("\nCourses Names are started...\n");
+                }
+                if(tempGeneralCourses == NULL){
+                    //If temp is NULL , it means that we are at the end of the tempStudent list.
 
-                    nodeStudent *iterator = malloc(sizeof(newStudent));
+                    appendToLinkedList(&nodeCourses,tempStudentCourses->courseName);
 
-                    if(fscanf(inputFile, " %1023s", word) == 1){
+                }
+                tempStudentCourses = tempStudentCourses->next;
+            }
+            nodeStudents[currentStudentIndex] = newStudent;
+            currentStudentIndex++;
+        }
+    }
+    //End of reading the txt file !!
 
-                        strcpy(newStudent->courseName,word);
+
+    fclose(inputFile);
+    int V = printList(nodeCourses); //Linked list that holds the all the courses.
+
+    // create the graph given in above figure
+    struct Graph* graph = createGraph(V);
+
+    int coursesIndex = 0;
+    struct nodeStudent* tempCourses;
+    tempCourses = nodeCourses->next;
+    while (tempCourses != NULL){ //Assigning the courseNamesList with the data we collected as General Course Nodes.
+
+        strcpy(coursesNamesList[coursesIndex],tempCourses->courseName);
+        tempCourses = tempCourses->next;
+        coursesIndex++;
+    }
+
+    //Starting to adding edges...
+    for (int n = 0; n < 10; ++n) {
+
+        if (strcmp(nodeStudents[n]->studentName,"") == 0){ // If the current student is not exists !
+            break;
+        }
+
+        struct nodeStudent* tempBaseCourse;
+        tempBaseCourse = nodeStudents[n]->next;
+
+        while(tempBaseCourse != NULL){
+
+            struct nodeStudent* tempDestCourse;
+            tempDestCourse = tempBaseCourse->next;
+
+            int tempBaseCourseIndex = 0;
+
+            for (int i = 0; i < MAX_NUMBER_COURSES; ++i) { //Trying to find the base course's index.
+
+                if(strcmp(coursesNamesList[i],tempBaseCourse->courseName) == 0){
+
+                    tempBaseCourseIndex = i ;
+                }
+            }
+
+            while(tempDestCourse != NULL){
+
+                int tempDestCourseIndex = 0;
+
+                for (int i = 0; i < MAX_NUMBER_COURSES; ++i) {//Trying to find the dest course's index.
+
+                    if(strcmp(coursesNamesList[i],tempDestCourse->courseName) == 0){
+
+                        tempDestCourseIndex = i ;
                     }
 
-                    iterator = newStudent->next;
+                }
 
-                    while (!feof(inputFile)) {
+                printf("\n-- Adding edge at (%d,%d) \n",tempBaseCourseIndex,tempDestCourseIndex);
+                struct AdjListNode* adjacentListIterator ;
+                adjacentListIterator = graph->array[tempBaseCourseIndex].head;
+                int isAlreadyConnected = 0;
 
-                        while (fscanf(inputFile, " %1023s", word) == 1) {
+                while (adjacentListIterator){
 
-                            iterator = malloc(sizeof(newStudent));
-                            strcpy(iterator->courseName,word);
+                    if (adjacentListIterator->dest == tempDestCourseIndex){
 
-                            iterator = iterator->next;
+                        isAlreadyConnected = 1;
+                        break;
 
+                    }else{
 
-                        }
+                        adjacentListIterator = adjacentListIterator->next;
                     }
 
+                }
 
+                if(isAlreadyConnected == 0){
 
-
-
-                }else if(strcmp(word,".") == 0){
-
-                    printf("\nCourses Names are ended...\n");
+                    addEdge(graph, tempBaseCourseIndex, tempDestCourseIndex);
 
                 }else{
 
-                    strcpy(studentNameFromInputFile[index],word); //If it isn't a starter for Courses names or it isn't a end of courses names. It is one of the Student Names.
-                    strcpy(studentNameFromInputFile[index+1],"");
-                    index++;
+                    printf("\n%s and %s already connected.\n",coursesNamesList[tempBaseCourseIndex],coursesNamesList[tempDestCourseIndex]);
                 }
+
+                tempDestCourse = tempDestCourse->next;
 
             }
 
+            tempBaseCourse = tempBaseCourse->next;
+
         }
-
-
     }
 
-
-
-//    berna altinel:cse100,cse300,cse400
-//    harun büyüktepe:cse225,cse344,cse363
-
-
-
-    // create the graph given in above figure
-    int V = 6;
-    struct Graph* graph = createGraph(V);
-    addEdge(graph, 0, 1);
-    addEdge(graph, 0, 2);
-    addEdge(graph, 1, 2);
-    addEdge(graph, 0, 3);
-    addEdge(graph, 2, 5);
-    addEdge(graph, 2, 4);
-    addEdge(graph, 4, 5);
-
-
+    //End of adding edges.
 
     printGraph(graph);
 
-
-
-    STACK *stackForDFS; //Created a stack for store the LIFO actions during DFS traversal of nodes. We will push every vertex that we visited.
+    STACK *stackForDFS; // Created a stack for store the LIFO actions during DFS traversal of nodes. We will push every vertex that we visited.
     stackForDFS = malloc(sizeof(STACK));
     stackForDFS->top = -1;
 
-
-
-    DFS(graph,coursesNamesList,stackForDFS,3);
-
-
+    DFS(graph,coursesNamesList,stackForDFS,3); //DFS traversal. It is also assigning the colors.
 
     int biggesColorIndex = -1;
     for (int k = 0; k < graph->V; ++k) { //Try to find biggestColorIndex for later use in the output.
-        if (graph->array[k].color>biggesColorIndex){
+        if (graph->array[k].color > biggesColorIndex){
             biggesColorIndex = graph->array[k].color;
         }
 
@@ -485,16 +540,13 @@ int main()
 
     int scheduleList[biggesColorIndex+1];
 
-
     for (int l = 0; l < biggesColorIndex + 1; ++l) { //Assign 0 to all the period array's elements.
-
 
         scheduleList[l] = 0;
 
-
     }
 
-    for (int j = 0; j < biggesColorIndex+1; ++j) {
+    for (int j = 0; j < biggesColorIndex+1; ++j) { //Printing the Final Exam Periods.
 
         printf("\nFinal Exam Period %d => ", j+1);
 
@@ -507,7 +559,6 @@ int main()
             }
         }
     }
-
 
     return 0;
 }
